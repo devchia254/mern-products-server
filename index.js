@@ -4,18 +4,18 @@ const mysql = require("mysql");
 
 const app = express();
 
-const connection = mysql.createConnection({
+const getConnection = mysql.createConnection({
   host: "localhost",
   user: "root",
   password: "password",
-  database: "react_sql"
+  database: "react_sql",
 });
 
-connection.connect(err => {
+getConnection.connect((err) => {
   if (err) {
-    return err;
+    console.log(`Error connecting to MySQL DB: ${err}`);
   }
-  console.log("MySQL DB is connected!");
+  // console.log("MySQL DB is connected!");
 });
 
 // Allows the client (broswer) to connect with more than one server at a time e.g. Server A is the webpage but makes an ajax call to Server B to request for data. It is a security mechanism for browsers only. CORS can also give specific access to other
@@ -27,17 +27,36 @@ app.get("/", (req, res) => {
   res.send("Go to /products to see products");
 });
 
-const SELECT_ALL_PRODUCTS_QUERY = "SELECT * FROM products";
-
 app.get("/products", (req, res) => {
-  connection.query(SELECT_ALL_PRODUCTS_QUERY, (err, results) => {
+  const SELECT_ALL_PRODUCTS_QUERY = "SELECT * FROM products";
+  getConnection.query(SELECT_ALL_PRODUCTS_QUERY, (err, results) => {
     if (err) {
-      return res.send(err);
-    } else {
-      return res.json({
-        dataBaby: results
-      });
+      console.log(`Failed to display products: ${err}`);
+      res.sendStatus(500);
+      return;
     }
+
+    res.json({
+      dataBaby: results,
+    });
+    console.log("Products was fetched successfully!");
+  });
+});
+
+app.get("/products/:id", (req, res) => {
+  const productId = req.params.id;
+  // console.log(req);
+  // res.end();
+  const SELECT_PRODUCT_ID_QUERY = "SELECT * FROM products where product_id = ?";
+  getConnection.query(SELECT_PRODUCT_ID_QUERY, productId, (err, results) => {
+    if (err) {
+      console.log(`Failed to display product: ${err}`);
+      res.sendStatus(500);
+      return;
+    }
+
+    res.json(results);
+    console.log("Product was fetched successfully!");
   });
 });
 
@@ -49,15 +68,30 @@ app.post("/products/add", (req, res) => {
 
   const INSERT_PRODUCTS_QUERY = `INSERT INTO products (name, price) VALUES ("${name}", ${price})`;
 
-  connection.query(INSERT_PRODUCTS_QUERY, (err, results) => {
+  getConnection.query(INSERT_PRODUCTS_QUERY, (err, results) => {
     if (err) {
-      return res.send(err);
-    } else {
-      return res.send("Successfully added products!");
-      // return res.json(results);
+      console.log(`Failed to add product: ${err}`);
+      res.sendStatus(500);
+      return;
     }
+
+    res.send("Successfully added products!");
+    console.log(`Product added with id: ${results.insertId}`);
   });
-  // res.send("adding product");
+});
+
+app.delete("products/delete", (req, res) => {
+  res.send(`Delete page received!`);
+  // var id;
+  // var sql = "DELETE FROM products WHERE id = ? ";
+  // getConnection.query(sql, function (err, result) {
+  //   if (err) {
+  //     console.log(`Failed to delete product: ${err}`);
+  //     res.sendStatus(500);
+  //     return;
+  //   }
+  //   console.log("Number of records deleted: " + result.affectedRows);
+  // });
 });
 
 app.listen(4000, () => {
