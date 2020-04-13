@@ -4,6 +4,12 @@ const mysql = require("mysql");
 
 const app = express();
 
+// Middlewares
+app.use(express.json()); //Express's built-in body-parser
+app.use(express.urlencoded({ extended: true }));
+app.use(cors());
+
+// Database Connection
 const getConnection = mysql.createConnection({
   host: "localhost",
   user: "root",
@@ -18,15 +24,12 @@ getConnection.connect((err) => {
   // console.log("MySQL DB is connected!");
 });
 
-// Allows the client (broswer) to connect with more than one server at a time e.g. Server A is the webpage but makes an ajax call to Server B to request for data. It is a security mechanism for browsers only. CORS can also give specific access to other
-app.use(cors());
-app.use(express.json()); //Express's built-in body-parser
-app.use(express.urlencoded({ extended: false }));
-
+// Connect to Homepage
 app.get("/", (req, res) => {
   res.send("Go to /products to see products");
 });
 
+// Get all products
 app.get("/products", (req, res) => {
   const SELECT_ALL_PRODUCTS_QUERY = "SELECT * FROM products";
   getConnection.query(SELECT_ALL_PRODUCTS_QUERY, (err, results) => {
@@ -39,16 +42,40 @@ app.get("/products", (req, res) => {
     res.json({
       dataBaby: results,
     });
-    console.log("Products was fetched successfully!");
+    console.log("List of products fetched successfully!");
   });
 });
 
+// Submit a product
+app.post("/products/add", (req, res) => {
+  const { name, price } = req.body;
+
+  // console.log(req.body);
+  console.log("Name: ", name);
+  console.log("Price: ", price);
+
+  const INSERT_PRODUCTS_QUERY = `INSERT INTO products (name, price) VALUES (?, ?)`;
+
+  getConnection.query(INSERT_PRODUCTS_QUERY, [name, price], (err, results) => {
+    if (err) {
+      console.log(`Failed to add product: ${err}`);
+      res.sendStatus(500);
+      return;
+    }
+
+    res.send("Just added a product!");
+    console.log(`Product added with id: ${results}`);
+  });
+});
+
+// Get product id
 app.get("/products/:id", (req, res) => {
+  //req.params.id is for testing purposes. Uses req.body.id for final production
   const productId = req.params.id;
   // console.log(req);
   // res.end();
   const SELECT_PRODUCT_ID_QUERY = "SELECT * FROM products where product_id = ?";
-  getConnection.query(SELECT_PRODUCT_ID_QUERY, productId, (err, results) => {
+  getConnection.query(SELECT_PRODUCT_ID_QUERY, [productId], (err, results) => {
     if (err) {
       console.log(`Failed to display product: ${err}`);
       res.sendStatus(500);
@@ -60,40 +87,54 @@ app.get("/products/:id", (req, res) => {
   });
 });
 
-app.post("/products/add", (req, res) => {
-  const { name, price } = req.body;
+app.put("/products/:id", (req, res) => {
+  // console.log(req.params.id);
+  const productId = req.params.id;
+  const productName = req.body.name;
+  const productPrice = req.body.price;
 
-  // console.log(name);
-  // console.log(price);
+  const UPDATE_PRODUCT =
+    "UPDATE products SET name = ?, price = ? WHERE product_id = ?";
 
-  const INSERT_PRODUCTS_QUERY = `INSERT INTO products (name, price) VALUES ("${name}", ${price})`;
+  getConnection.query(
+    UPDATE_PRODUCT,
+    [productName, productPrice, productId],
+    (err, results) => {
+      if (err) {
+        console.log(`Failed to update product: ${err}`);
+        res.sendStatus(500);
+        return;
+      }
+      console.log("Results msg: ", results.message);
+      res.send("Product update was successful!");
+    }
+  );
+});
 
-  getConnection.query(INSERT_PRODUCTS_QUERY, (err, results) => {
+// Delete a product by id
+app.delete("/products/delete", (req, res) => {
+  // console.log(req.params.id);
+  console.log(req.body.id);
+
+  const productId = req.body.id;
+
+  var DELETE_PRODUCTS_ID = "DELETE FROM products WHERE product_id = ? ";
+
+  getConnection.query(DELETE_PRODUCTS_ID, [productId], (err, results) => {
     if (err) {
-      console.log(`Failed to add product: ${err}`);
+      console.log(`Failed to delete product: ${err}`);
       res.sendStatus(500);
       return;
     }
 
-    res.send("Successfully added products!");
-    console.log(`Product added with id: ${results.insertId}`);
+    res.send("Deleting product was successful!");
+    // console.log(result);
+    console.log("Number of records deleted: " + results.affectedRows);
   });
 });
 
-app.delete("products/delete", (req, res) => {
-  res.send(`Delete page received!`);
-  // var id;
-  // var sql = "DELETE FROM products WHERE id = ? ";
-  // getConnection.query(sql, function (err, result) {
-  //   if (err) {
-  //     console.log(`Failed to delete product: ${err}`);
-  //     res.sendStatus(500);
-  //     return;
-  //   }
-  //   console.log("Number of records deleted: " + result.affectedRows);
-  // });
-});
-
-app.listen(4000, () => {
+// Server port listening
+const port = process.env.PORT || 4000;
+app.listen(port, () => {
   console.log(`Products server is listening on port 4000`);
 });
