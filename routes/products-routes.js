@@ -2,11 +2,11 @@ module.exports = (app) => {
   const sql = require("../models/mysql-db.js");
 
   // -- Controllers -- //
-  const allProducts = require("../controllers/allProducts.js");
-  const addProduct = require("../controllers/addProduct.js");
-  const getProduct = require("../controllers/getProduct.js");
-  const updateProduct = require("../controllers/updateProduct.js");
-  const deleteProduct = require("../controllers/deleteProduct.js");
+  const allProducts = require("../controllers/all-products.js");
+  const addProduct = require("../controllers/add-product.js");
+  const getProduct = require("../controllers/get-product.js");
+  const updateProduct = require("../controllers/update-product.js");
+  const deleteProduct = require("../controllers/delete-product.js");
 
   // -- Definining API endpoints -- //
 
