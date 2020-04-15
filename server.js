@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors"); // Cross Origin Resource Sharing (CORS)
 
+// Express App
 const app = express();
 
 // Middlewares
@@ -19,6 +20,6 @@ app.get("/", (req, res) => {
   res.send("Go to /products to see products");
 });
 
-// Defining API endpoints aka routes
+// Implementing routes
 const routes = require("./routes/products-routes.js");
 routes(app);
