@@ -4,6 +4,8 @@ const updateProduct = (req, res, sql) => {
   const productName = req.body.name;
   const productPrice = req.body.price;
 
+  // console.log({ productId, productName, productPrice });
+
   const UPDATE_PRODUCT =
     "UPDATE products SET name = ?, price = ? WHERE product_id = ?";
 

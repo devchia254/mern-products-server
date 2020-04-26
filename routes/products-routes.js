@@ -31,7 +31,7 @@ module.exports = (app) => {
   });
 
   // Delete a product by id
-  app.delete("/products/delete", (req, res) => {
+  app.delete("/products/:id", (req, res) => {
     deleteProduct.handleDeleteProduct(req, res, sql);
   });
 };

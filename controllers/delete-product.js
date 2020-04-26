@@ -1,8 +1,8 @@
 const deleteProduct = (req, res, sql) => {
-  // console.log(req.params.id);
-  console.log(req.body.id);
+  console.log(req.params.id);
+  // console.log(req.body.id);
 
-  const productId = req.body.id;
+  const productId = req.params.id;
 
   var DELETE_PRODUCTS_ID = "DELETE FROM products WHERE product_id = ? ";
 
