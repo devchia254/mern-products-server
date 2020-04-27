@@ -16,7 +16,7 @@ module.exports = (app) => {
   });
 
   // Submit a product
-  app.post("/products/add", (req, res) => {
+  app.post("/products/", (req, res) => {
     addProduct.handleAddProduct(req, res, sql);
   });
 
